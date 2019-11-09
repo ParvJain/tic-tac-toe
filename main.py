@@ -60,7 +60,7 @@ def is_winner(player_locations):
             return True
     return False
 
-# give 2 string choices and a state outputs opposite state like, [in]on -> [out]off.
+# give 2 string choices and a state; outputs opposite state like, [in]on -> [out]off.
 def toggle(state, choices):
     if len(choices) < 1:
         log("MethodNotSupported")
@@ -146,7 +146,6 @@ def analyze_match(current_player_data, current_player):
         return roll_game(current_player)
 
 def roll_game(current_player='PLAYER_A'):
-    log("Start")
     print()
     location = None
     current_player_data = player_meta_data[current_player]
@@ -159,9 +158,9 @@ def roll_game(current_player='PLAYER_A'):
             location = int(current_location)
             
     update_location(current_player, location)
-    analyze_match(current_player_data, current_player)
-    return True
+    return analyze_match(current_player_data, current_player)
     
 if __name__ == "__main__":
     player_sign_up()
+    log("Start")
     roll_game()

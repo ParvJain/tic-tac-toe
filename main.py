@@ -36,6 +36,7 @@ def update_location(player, location):
     game_data["available_locations"][game_data["available_locations"] \
                                     .index(location)] = player_data['mark']
     player_data['marked_location'].append(location)
+    return True
 
 
 # checks user marks iterating through cheat sheet
@@ -93,19 +94,17 @@ def player_sign_up():
     return True
 
 def reset_score():
-    game_data["available_locations"] = [1,2,3,
-                                        4,5,6,
-                                        7,8,9]
+    game_data["available_locations"] = list(range(1,10))
     for player in player_meta_data.keys():
         player_meta_data[player]['marked_location'] = list()
     
-    return
+    return True
 
 def rematch_prompt(last_player):
     rematch = input(f"Another match? :")
     if rematch.lower()[0] == 'y':
         start_match(toggle(last_player, list(player_meta_data.keys())))
-    log("End")
+    log("End") # No for rematch!
     return True
 
 def start_match(current_player='PLAYER_A'):
@@ -118,6 +117,7 @@ def start_match(current_player='PLAYER_A'):
         location = None
         current_player_data = player_meta_data[current_player]
 
+        # prompting for grid location until it's something that we can mark.
         while location not in game_data["available_locations"]:
             current_location = get_player_location(current_player_data['name'])
             if check_location_integrity(current_location):
@@ -138,9 +138,7 @@ def start_match(current_player='PLAYER_A'):
         else:
             total_moves += 1
             current_player = toggle(current_player, list(player_meta_data.keys()))
-        
-def main():
+    
+if __name__ == "__main__":
     player_sign_up()
     start_match()
-    
-main()

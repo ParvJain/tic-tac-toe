@@ -1,17 +1,3 @@
-
-## Sample Constants
-
-player_meta_data = {
-    'A_NAME' : 'Jack',
-    'A_MARK' : 'X',
-    'A_LOCATION' : [],
-    'B_NAME' : 'Tim',
-    'B_MARK' : 'O',
-    'B_LOCATION' : [],
-}
-
-available_locations = [1,2,3,4,5,6,7,8,9]
-
 ## Implimentation flow
 
 0. Initialize Program.
@@ -21,6 +7,7 @@ available_locations = [1,2,3,4,5,6,7,8,9]
 4. check for win; break if win : continue if not
 5. increment move by 1, switch player and goto: 2
 6. check if total moves are 9 declare a tie.
+7. prompt a rematch -> reset scores and meta data.
 
 
 ## Valid Inputs
@@ -33,9 +20,11 @@ available_locations = [1,2,3,4,5,6,7,8,9]
 
 Given a 3 x 3 grid with the pre-filled values from 1 to 9 marked left to right, here are the possible "win" cases:
 
+```
 [[1,2,3], [4,5,6], [7,8,9], # vertical lines
 [1,4,7], [2,5,8], [3,6,9], # horizontal lines
 [1,5,9], [3,5,7]] # diagonal lines
+```
 
 ## Additional Features
 

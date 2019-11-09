@@ -16,6 +16,7 @@ player_meta_data = {
 }
 
 game_data = {
+    "machine_mode": False,
     "board_dimension": 3,
     "available_locations" : list(range(1,10)),
     "winners_cheat_sheet" : [[1,2,3], [4,5,6], [7,8,9], # vertical lines
@@ -105,10 +106,25 @@ def set_player_mark(choosen_mark):
     player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
     return True
 
+def boot_machine():
+    game_data["machine_mode"] = True
+    player_meta_data["PLAYER_B"]["name"] = "Mr. 🤖"
+    player_name = ''
+    while len(player_name) < 1:
+        player_name = input(f"I'm Player 1 and My Name is: ")
+    player_meta_data["PLAYER_A"]['name'] = player_name 
+    return True
+
 def player_sign_up():
     choosen_mark = \
         input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
     set_player_mark(choosen_mark)
+    machine_mode =  \
+        input(f"Do you want to play against 🤖 : ").strip()
+    if machine_mode.lower()[0] == 'y':
+        boot_machine()
+        return True
+
     for idx, player in enumerate(player_meta_data.keys()):
         player_name = ''
         while len(player_name) < 1:
@@ -213,28 +229,8 @@ def machine_move():
                 duck_move = list(set(possible_attack_moves+possible_defense_moves))
                 return random.choice(duck_move)
             return random.choice(combined_set_moves)
-
-
-
-def play_against_machine():
-    machine_move()
-        
-
     
 if __name__ == "__main__":
-    # play_against_machine()
     player_sign_up()
     log("Start")
     roll_game()
-
-    # available_moves = [3,6,7,8,9]
-    # rank = dict(attack={}, defend={})
-    # machine_historical_data = [1,4]
-    # opponent_historical_data = [2,5]
-
-    
-        # print(machine_next_move)
-        
-        
-            
-    # print(rank)

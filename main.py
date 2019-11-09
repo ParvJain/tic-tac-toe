@@ -84,7 +84,7 @@ def get_player_location(player_name, mark):
 def set_player_mark(choosen_mark):
     sanitized_mark = mark_parser(choosen_mark)
     reversed_sanitized_mark = toggle(sanitized_mark, ['X', 'O'])
-    print(f"Player 1 will play as {sanitized_mark}, and Player 2 {reversed_sanitized_mark}")
+    print(f"Player 1 will play as '{sanitized_mark}', and Player 2 '{reversed_sanitized_mark}'")
     player_meta_data['PLAYER_A']['mark'] = sanitized_mark
     player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
     return True

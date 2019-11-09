@@ -1,3 +1,7 @@
+## How to start the game?
+
+`$ python3 main.py`
+
 ## Implimentation flow
 
 0. Initialize Program.

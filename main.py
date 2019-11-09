@@ -70,21 +70,29 @@ def check_location_integrity(new_location):
         return False
     return True
 
+def mark_parser(choice):
+    if choice.lower() == 'x':
+        return 'X'
+    elif choice.lower() == 'o':
+        return 'O'
+    return 'X'
+
 def get_player_location(player_name, mark):
     show_board()
     return input(f"It's your turn 🎲, {player_name} you're {mark} : ")
 
-def set_player_mark():
-    choosen_mark = \
-        input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
-    if (choosen_mark != 'X' or choosen_mark != 'O'):
-        choosen_mark = 'X'
-    player_meta_data['PLAYER_A']['mark'] = choosen_mark
-    player_meta_data['PLAYER_B']['mark'] = toggle(choosen_mark, ['X', 'O'])
+def set_player_mark(choosen_mark):
+    sanitized_mark = mark_parser(choosen_mark)
+    reversed_sanitized_mark = toggle(sanitized_mark, ['X', 'O'])
+    print("Player 1 will play as {sanitized_mark}, and Player 2 {reversed_sanitized_mark}")
+    player_meta_data['PLAYER_A']['mark'] = sanitized_mark
+    player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
     return True
 
 def player_sign_up():
-    set_player_mark()
+    choosen_mark = \
+        input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
+    set_player_mark(choosen_mark)
     for idx, player in enumerate(player_meta_data.keys()):
         player_name = ''
         while len(player_name) < 1:

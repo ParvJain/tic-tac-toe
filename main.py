@@ -1,3 +1,5 @@
+from log import log
+
 player_meta_data = {
     'PLAYER_A' : {
         'name' : '',
@@ -15,8 +17,8 @@ game_data = {
     "board_dimension": 3,
     "available_locations" : list(),
     "winners_cheat_sheet" : [[1,2,3], [4,5,6], [7,8,9], # vertical lines
-                       [1,4,7], [2,5,8], [3,6,9], # horizontal lines
-                       [1,5,9], [3,5,7]] # diagonal lines
+                             [1,4,7], [2,5,8], [3,6,9], # horizontal lines
+                             [1,5,9], [3,5,7]] # diagonal lines
 }
 
 
@@ -46,11 +48,11 @@ def is_winner(player_locations):
 # give 2 string choices and a state outputs opposite state like, [in]on -> [out]off.
 def toggle(state, choices):
     if len(choices) < 1:
-        print("Method not supported for more than one choice")
+        log("MethodNotSupported")
         return 
     state = str(state).strip()
     if state not in choices:
-        print("Choices doesn't have your current state")
+        log("InvalidChoice")
     choices.remove(state)
     return choices[0]
 
@@ -60,10 +62,10 @@ def is_location_taken(new_location):
 # checks location type and availability
 def check_location_integrity(new_location):
     if not new_location.isdecimal():
-        print("ERROR not a number")
+        log("NaN")
         return False
     elif is_location_taken(int(new_location)):
-        print("ERROR invalid location")
+        log("OutOfRange")
         return False
     return True
 
@@ -82,7 +84,6 @@ def set_player_mark():
 
 def player_sign_up():
     set_player_mark()
-    print(player_meta_data.keys())
     for idx, player in enumerate(player_meta_data.keys()):
         player_name = ''
         while len(player_name) < 1:
@@ -104,10 +105,11 @@ def rematch_prompt(last_player):
     rematch = input(f"Another match? :")
     if rematch.lower()[0] == 'y':
         start_match(toggle(last_player, list(player_meta_data.keys())))
-    print("Hope you had fun!")
+    log("End")
     return True
 
 def start_match(current_player='PLAYER_A'):
+    log("Start")
     total_moves = 0
     reset_score()
 
@@ -124,12 +126,12 @@ def start_match(current_player='PLAYER_A'):
         update_location(current_player, location)
             
         if is_winner(current_player_data['marked_location']):
-            print(f"You've won! {current_player_data['name']}")
+            log("Won")
             show_board()
             rematch_prompt(current_player)
             break
         elif total_moves == 8:
-            print("It's a tie")
+            log("Tie")
             show_board()
             rematch_prompt(current_player)
             break

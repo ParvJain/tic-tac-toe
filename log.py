@@ -6,19 +6,17 @@ log_config = {
     "InvalidChoice":       {"level": 40,
                             "message": "Choices doesn't have your current state"},
     "NaN":                 {"level": 40,
-                            "message": "You need to choose from available numbers on \
-                                board to mark your location"},
+                            "message": "You need to choose from available numbers 🔢 on board to mark your location"},
     "OutOfRange":          {"level": 40,
-                            "message": "You can run but can't hide, choose a number that \
-                                is available"},
+                            "message": "You can run but can't hide 👟, choose a number that is available"},
     "Won":                 {"level": 20,
-                            "message": "You have won this match, rematch?"},
+                            "message": "You have won this match 🏆, rematch?"},
     "Tie":                  {"level": 20,
-                            "message": "You've both outsmarted each other, try again?"},
+                            "message": "You've both outsmarted each other, 🤼 try again?"},
     "End":                  {"level": 20,
-                            "message": "Hope you had as much fun, as I had while creating this."},
+                            "message": "Hope you had as much fun 👻, as I had while writing this."},
     "Start":                {"level": 20,
-                            "message": "Match Started!"}
+                            "message": "Match Started! 🏁"}
 }
 
 

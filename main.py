@@ -70,13 +70,13 @@ def check_location_integrity(new_location):
         return False
     return True
 
-def get_player_location(player_name):
+def get_player_location(player_name, mark):
     show_board()
-    return input(f"Where you want to place your mark, {player_name}: ")
+    return input(f"It's your turn 🎲, {player_name} you're {mark} : ")
 
 def set_player_mark():
     choosen_mark = \
-        input(f"Hello Player 1, choose your Mark ('X' or 'O'); with default as 'X': ").strip()
+        input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
     if (choosen_mark != 'X' or choosen_mark != 'O'):
         choosen_mark = 'X'
     player_meta_data['PLAYER_A']['mark'] = choosen_mark
@@ -101,7 +101,7 @@ def reset_score():
     return True
 
 def rematch_prompt(last_player):
-    rematch = input(f"Another match? :")
+    rematch = input(f"Another match? (yes, no) : ")
     if rematch.lower()[0] == 'y':
         start_match(toggle(last_player, list(player_meta_data.keys())))
     log("End") # No for rematch!
@@ -119,13 +119,15 @@ def start_match(current_player='PLAYER_A'):
 
         # prompting for grid location until it's something that we can mark.
         while location not in game_data["available_locations"]:
-            current_location = get_player_location(current_player_data['name'])
+            current_location = get_player_location(current_player_data['name'], \
+                                                    current_player_data['mark'])
             if check_location_integrity(current_location):
                 location = int(current_location)
                 
         update_location(current_player, location)
             
         if is_winner(current_player_data['marked_location']):
+            print(f"{current_player_data['name']} Won! 🎉")
             log("Won")
             show_board()
             rematch_prompt(current_player)

@@ -123,13 +123,11 @@ def analyze_match(current_player_data, current_player):
         print(f"{current_player_data['name']} Won! 🎉")
         log("Won")
         show_board()
-        rematch_prompt(current_player)
-        return True
+        return rematch_prompt(current_player)
     elif game_data["total_moves"] == 8:
         log("Tie")
         show_board()
-        rematch_prompt(current_player)
-        return True
+        return rematch_prompt(current_player)
     else:
         game_data["total_moves"] += 1
         current_player = toggle(current_player, list(player_meta_data.keys()))

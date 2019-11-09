@@ -22,6 +22,17 @@ game_data = {
     "total_moves" : 0
 }
 
+def magic_cols(row):
+    fg = lambda text, color: "\33[38;5;" + str(color) + "m" + text + "\33[0m"
+    column_list = list()
+    for col in row:
+        if type(col) is int:
+            column_list.append(fg(str(col), 11))
+        elif (col == 'X'):
+            column_list.append(fg(col, 21))
+        elif (col == 'O'):
+            column_list.append(fg(col, 9))
+    return column_list
 
 # Groups the grid by 3 and loop through to print columns
 def show_board():
@@ -29,7 +40,9 @@ def show_board():
                         for k in range(0, len(game_data["available_locations"]),\
                          game_data["board_dimension"])]
     for row in grouped_location:
+        row = magic_cols(row)
         print(f"|{row[0]}|{row[1]}|{row[2]}|")
+    return True
 
 # modifying grid data and updating player data
 def update_location(player, location):
@@ -99,7 +112,6 @@ def player_sign_up():
         while len(player_name) < 1:
             player_name = input(f"I'm Player {str(idx + 1)} and My Name is: ")
         player_meta_data[player]['name'] = player_name 
-    
     return True
 
 def reset_score():

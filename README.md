@@ -36,3 +36,8 @@ Given a 3 x 3 grid with the pre-filled values from 1 to 9 marked left to right, 
 [[1,2,3], [4,5,6], [7,8,9], # vertical lines
 [1,4,7], [2,5,8], [3,6,9], # horizontal lines
 [1,5,9], [3,5,7]] # diagonal lines
+
+## Additional Features
+
+1. If you've won the round, next round looser will have an advantage by making the first move.
+2. If it's a tie, alternative player will have advantage.

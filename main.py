@@ -171,8 +171,6 @@ def get_available_slots():
 def gather_data(next_move, move):
     rank = dict()
     for cheat in game_data["winners_cheat_sheet"]:
-        print(next_move)
-        print(set(next_move) & set(cheat))
         level = len(set(next_move) & set(cheat))
         if level not in rank:
             rank[level] = []

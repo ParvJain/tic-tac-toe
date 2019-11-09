@@ -26,8 +26,6 @@ game_data = {
     "historical_score_data": []
 }
 
-
-
 def magic_cols(row):
     fg = lambda text, color: "\33[38;5;" + str(color) + "m" + text + "\33[0m"
     column_list = list()

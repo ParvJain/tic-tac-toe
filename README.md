@@ -34,3 +34,18 @@ Given a 3 x 3 grid with the pre-filled values from 1 to 9 marked left to right, 
 
 1. If you've won the round, next round looser will have an advantage by making the first move.
 2. If it's a tie, alternative player will have advantage.
+
+### Machine mode
+
+Machine mode works on two major priciples, 
+    1. Defend - Machine should defend any mark which allows opponent to win or to make any advancement towards wining
+    2. Attack - make advancements towards winning.
+
+which means after every step user takes it runs an analysis towards making it's next move by:
+    1. getting the available slots (moves).
+    2. compare machine and opponent's marked data against win scenarios to,
+    2. rank each possible move with following levels:
+        a. 0 - no affect on attack or defensiveness 
+        b. 1,2 - advancement towards making a win/defend
+        c. 3 - win or stop opponent from winning
+    3. [Power Move] once all moves are ranked; top rankers are picked up and randomly choosen.

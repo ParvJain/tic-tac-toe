@@ -1,4 +1,6 @@
 from log import log
+import copy
+import random
 
 player_meta_data = {
     'PLAYER_A' : {
@@ -151,16 +153,90 @@ def roll_game(current_player='PLAYER_A'):
     current_player_data = player_meta_data[current_player]
 
     # prompting for grid location until it's something that we can mark.
-    while location not in game_data["available_locations"]:
-        current_location = get_player_location(current_player_data['name'], \
-                                                current_player_data['mark'])
-        if check_location_integrity(current_location):
-            location = int(current_location)
-            
+    if current_player=='PLAYER_B':
+        location = machine_move()
+    else:
+        while location not in game_data["available_locations"]:
+            current_location = get_player_location(current_player_data['name'], \
+                                                    current_player_data['mark'])
+            if check_location_integrity(current_location):
+                location = int(current_location)
+                
     update_location(current_player, location)
     return analyze_match(current_player_data, current_player)
+
+def get_available_slots():
+    return [col for col in game_data["available_locations"] if type(col) is int]
+
+def gather_data(next_move, move):
+    rank = dict()
+    for cheat in game_data["winners_cheat_sheet"]:
+        print(next_move)
+        print(set(next_move) & set(cheat))
+        level = len(set(next_move) & set(cheat))
+        if level not in rank:
+            rank[level] = []
+        if move not in rank[level]:
+            rank[level].append(move)
+    return rank
+
+def machine_move():
+    available_moves = get_available_slots()
+    rank = dict(attack={}, defend={})
+    machine_historical_data = player_meta_data["PLAYER_B"]["marked_location"]
+    opponent_historical_data = player_meta_data["PLAYER_A"]["marked_location"]
+    for move in available_moves:
+        machine_next_move = copy.deepcopy(machine_historical_data)
+        machine_next_move.append(move)
+        move_data = gather_data(machine_next_move, move)
+        for level in move_data.keys():
+            if level not in rank["attack"]:
+                rank["attack"][level] = []
+            rank["attack"][level] = list(set(rank["attack"][level]+ move_data[level]))
+        opponent_next_move = copy.deepcopy(opponent_historical_data)
+        opponent_next_move.append(move)
+        move_data = gather_data(opponent_next_move, move)
+        for level in move_data.keys():
+            if level not in rank["defend"]:
+                rank["defend"][level] = []
+            rank["defend"][level] = list(set(rank["defend"][level]+ move_data[level]))
+
+    if 3 in rank["attack"]:
+        return rank["attack"][3][0]
+    if 3 in rank["defend"]:
+        return rank["defend"][3][0]
+    
+    for level in range(2,-1,-1):
+        if level in rank["attack"].keys() or level in rank["defend"]:
+            possible_attack_moves = rank["attack"][level] if level in rank["attack"] else []
+            possible_defense_moves = rank["defend"][level] if level in rank["defend"] else []
+            combined_set_moves = list(set(possible_attack_moves) & set(possible_defense_moves))
+            if len(combined_set_moves) == 0:
+                duck_move = list(set(possible_attack_moves+possible_defense_moves))
+                return random.choice(duck_move)
+            return random.choice(combined_set_moves)
+
+
+
+def play_against_machine():
+    machine_move()
+        
+
     
 if __name__ == "__main__":
+    # play_against_machine()
     player_sign_up()
     log("Start")
     roll_game()
+
+    # available_moves = [3,6,7,8,9]
+    # rank = dict(attack={}, defend={})
+    # machine_historical_data = [1,4]
+    # opponent_historical_data = [2,5]
+
+    
+        # print(machine_next_move)
+        
+        
+            
+    # print(rank)

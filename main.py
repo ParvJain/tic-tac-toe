@@ -2,23 +2,24 @@ from log import log
 
 player_meta_data = {
     'PLAYER_A' : {
-        'name' : '',
-        'mark' : '',
+        'name' : str(),
+        'mark' : str(),
         'marked_location': list()
     },
     'PLAYER_B' : {
-        'name' : '',
-        'mark' : '',
+        'name' : str(),
+        'mark' : str(),
         'marked_location': list()
     }
 }
 
 game_data = {
     "board_dimension": 3,
-    "available_locations" : list(),
+    "available_locations" : list(range(1,10)),
     "winners_cheat_sheet" : [[1,2,3], [4,5,6], [7,8,9], # vertical lines
                              [1,4,7], [2,5,8], [3,6,9], # horizontal lines
-                             [1,5,9], [3,5,7]] # diagonal lines
+                             [1,5,9], [3,5,7]], # diagonal lines,
+    "total_moves" : 0
 }
 
 
@@ -105,50 +106,54 @@ def reset_score():
     game_data["available_locations"] = list(range(1,10))
     for player in player_meta_data.keys():
         player_meta_data[player]['marked_location'] = list()
-    
+    game_data["total_moves"] = 0
     return True
 
 def rematch_prompt(last_player):
     rematch = input(f"Another match? (yes, no) : ")
     if rematch.lower()[0] == 'y':
-        start_match(toggle(last_player, list(player_meta_data.keys())))
-    log("End") # No for rematch!
+        reset_score()
+        roll_game(toggle(last_player, list(player_meta_data.keys())))
+    else:
+        log("End") # No for rematch!
     return True
 
-def start_match(current_player='PLAYER_A'):
+def analyze_match(current_player_data, current_player):
+    if is_winner(current_player_data['marked_location']):
+        print(f"{current_player_data['name']} Won! 🎉")
+        log("Won")
+        show_board()
+        rematch_prompt(current_player)
+        return True
+    elif game_data["total_moves"] == 8:
+        log("Tie")
+        show_board()
+        rematch_prompt(current_player)
+        return True
+    else:
+        game_data["total_moves"] += 1
+        current_player = toggle(current_player, list(player_meta_data.keys()))
+        return roll_game(current_player)
+
+def roll_game(current_player='PLAYER_A'):
     log("Start")
-    total_moves = 0
-    reset_score()
+    # reset_score()
+    # while True:
+    print()
+    location = None
+    current_player_data = player_meta_data[current_player]
 
-    while True:
-        print()
-        location = None
-        current_player_data = player_meta_data[current_player]
-
-        # prompting for grid location until it's something that we can mark.
-        while location not in game_data["available_locations"]:
-            current_location = get_player_location(current_player_data['name'], \
-                                                    current_player_data['mark'])
-            if check_location_integrity(current_location):
-                location = int(current_location)
-                
-        update_location(current_player, location)
+    # prompting for grid location until it's something that we can mark.
+    while location not in game_data["available_locations"]:
+        current_location = get_player_location(current_player_data['name'], \
+                                                current_player_data['mark'])
+        if check_location_integrity(current_location):
+            location = int(current_location)
             
-        if is_winner(current_player_data['marked_location']):
-            print(f"{current_player_data['name']} Won! 🎉")
-            log("Won")
-            show_board()
-            rematch_prompt(current_player)
-            break
-        elif total_moves == 8:
-            log("Tie")
-            show_board()
-            rematch_prompt(current_player)
-            break
-        else:
-            total_moves += 1
-            current_player = toggle(current_player, list(player_meta_data.keys()))
+    update_location(current_player, location)
+    analyze_match(current_player_data, current_player)
+    return True
     
 if __name__ == "__main__":
     player_sign_up()
-    start_match()
+    roll_game()

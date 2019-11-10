@@ -1,30 +1,6 @@
 from log import log
-import copy
-import random
-
-player_meta_data = {
-    'PLAYER_A' : {
-        'name' : str(),
-        'mark' : str(),
-        'marked_location': list()
-    },
-    'PLAYER_B' : {
-        'name' : str(),
-        'mark' : str(),
-        'marked_location': list()
-    }
-}
-
-game_data = {
-    "machine_mode": False,
-    "board_dimension": 3,
-    "available_locations" : list(range(1,10)),
-    "winners_cheat_sheet" : [[1,2,3], [4,5,6], [7,8,9], # vertical lines
-                             [1,4,7], [2,5,8], [3,6,9], # horizontal lines
-                             [1,5,9], [3,5,7]], # diagonal lines,
-    "total_moves" : 0,
-    "historical_score_data": []
-}
+from config import player_meta_data, game_data
+from machine import machine_move, boot_machine
 
 def magic_cols(row):
     fg = lambda text, color: "\33[38;5;" + str(color) + "m" + text + "\33[0m"
@@ -107,15 +83,6 @@ def set_player_mark(choosen_mark):
     player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
     return True
 
-def boot_machine():
-    game_data["machine_mode"] = True
-    player_meta_data["PLAYER_B"]["name"] = "Mr. 🤖"
-    player_name = ''
-    while len(player_name) < 1:
-        player_name = input(f"I'm Player 1 and My Name is: ")
-    player_meta_data["PLAYER_A"]['name'] = player_name 
-    return True
-
 def player_sign_up():
     choosen_mark = \
         input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
@@ -192,67 +159,6 @@ def roll_game(current_player='PLAYER_A'):
                 
     update_location(current_player, location)
     return analyze_match(current_player_data, current_player)
-
-def get_available_slots():
-    return [col for col in game_data["available_locations"] if type(col) is int]
-
-def gather_data(next_move_arr):
-    rank = dict()
-    possible_move = next_move_arr[-1]
-    for cheat in game_data["winners_cheat_sheet"]:
-        level = len(set(next_move_arr) & set(cheat))
-        if level not in rank:
-            rank[level] = []
-        if possible_move not in rank[level]:
-            rank[level].append(possible_move)
-    return rank
-
-def analyze_move(ranked_map):
-    # to win, or not opponent win.
-    power_move = 3
-    if power_move in ranked_map["attack"]:
-        return ranked_map["attack"][power_move][0]
-    if power_move in ranked_map["defend"]:
-        return ranked_map["defend"][power_move][0]
-
-    # traverse through 2 -> 1 -> 0 to find best possible, yet random move.
-    for level in range(2,-1,-1):
-        if level in ranked_map["attack"].keys() or level in ranked_map["defend"]:
-            possible_attack_moves = ranked_map["attack"][level] \
-                                        if level in ranked_map["attack"] else []
-            possible_defense_moves = ranked_map["defend"][level] \
-                                        if level in ranked_map["defend"] else []
-            combined_moves_set = list(set(possible_attack_moves) & set(possible_defense_moves))
-            if len(combined_moves_set) == 0:
-                duck_move = list(set(possible_attack_moves + possible_defense_moves))
-                return random.choice(duck_move)
-            return random.choice(combined_moves_set)
-    return True
-
-
-def machine_move():
-    available_moves = get_available_slots()
-    rank = dict(attack={}, defend={})
-    machine_historical_data = player_meta_data["PLAYER_B"]["marked_location"]
-    opponent_historical_data = player_meta_data["PLAYER_A"]["marked_location"]
-
-    for move in available_moves:
-        machine_next_move = copy.deepcopy(machine_historical_data)
-        machine_next_move.append(move)
-        move_data = gather_data(machine_next_move)
-        for level in move_data.keys():
-            if level not in rank["attack"]:
-                rank["attack"][level] = []
-            rank["attack"][level] = list(set(rank["attack"][level]+ move_data[level]))
-        opponent_next_move = copy.deepcopy(opponent_historical_data)
-        opponent_next_move.append(move)
-        move_data = gather_data(opponent_next_move)
-        for level in move_data.keys():
-            if level not in rank["defend"]:
-                rank["defend"][level] = []
-            rank["defend"][level] = list(set(rank["defend"][level]+ move_data[level]))
-
-    return analyze_move(rank)
     
 if __name__ == "__main__":
     player_sign_up()

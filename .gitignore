@@ -2,3 +2,4 @@
 *.log
 goku/*
 __pycache__/*
+.vscode/*

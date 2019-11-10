@@ -205,7 +205,6 @@ def gather_data(next_move_arr):
             rank[level] = []
         if possible_move not in rank[level]:
             rank[level].append(possible_move)
-    print(rank)
     return rank
 
 def analyze_move(ranked_map):
@@ -216,7 +215,6 @@ def analyze_move(ranked_map):
     if power_move in ranked_map["defend"]:
         return ranked_map["defend"][power_move][0]
 
-    print(ranked_map)
     # traverse through 2 -> 1 -> 0 to find best possible, yet random move.
     for level in range(2,-1,-1):
         if level in ranked_map["attack"].keys() or level in ranked_map["defend"]:

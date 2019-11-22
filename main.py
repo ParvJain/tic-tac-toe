@@ -64,9 +64,6 @@ def get_player_location(player_name, mark):
             pubsub.unsubscribe()
             return json.loads(move['data'])['move']
 
-    # show_board()
-    # return input(f"It's your turn 🎲, {player_name} you're {mark} : ")
-
 def set_player_mark(choosen_mark):
     sanitized_mark = mark_parser(choosen_mark)
     reversed_sanitized_mark = toggle(sanitized_mark, ['X', 'O'])
@@ -149,7 +146,6 @@ def update_player(user_data):
     player_meta_data[current_player]['marked_location'] = []
     return player_meta_data
 
-
 def initate_shared_objects():
     redis_client.publish('match_state', 1)
     redis_client.publish('available_grid', json.dumps(game_data['available_locations']))
@@ -164,7 +160,6 @@ def register_users():
     pubsub.subscribe(['register_user', 'machine_mode'])
     for user in pubsub.listen():
         channel = user['channel'].decode('ascii')
-        print(user)
         if (user['type'] == 'message' and channel == 'register_user'):
             users.append(user['data'])
         if (user['type'] == 'message' and channel == 'machine_mode'):
@@ -174,8 +169,6 @@ def register_users():
                 print('machine mode enabled')
                 boot_machine()
         if len(users) == 2:
-            print(users)
-            print('unsubscribed from register_user')
             pubsub.unsubscribe()
     return
 

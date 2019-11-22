@@ -124,9 +124,6 @@ def roll_game(current_player='PLAYER_A'):
     update_location(current_player, location)
     return analyze_match(current_player_data, current_player)
 
-def update_user_state():
-    pass
-
 def update_player(user_data):
     if len(player_meta_data) > 1:
         return False

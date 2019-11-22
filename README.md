@@ -101,7 +101,7 @@ local variables:
 
 ### What's not working
 
-1. ~~ Machine mode. ~~
+1. ~~Machine mode.~~
 2. If opponents have same name, it doesn't work as it's supposed to.
 3. User messages (waiting for another player, you've (won|lost|draw))
 4. Rematch

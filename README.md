@@ -97,3 +97,12 @@ local variables:
 3. if match state = 1
     a. subscribe to available_grid and display grid.
     b. if current_player = user_name -> prompt to publish move
+
+### What's not working
+
+1. Machine mode.
+2. If opponents have same name, it doesn't work as it's supposed to.
+3. User messages (waiting for another player, you've (won|lost|draw))
+4. Rematch
+5. Refactoring needed to make `client.py` code more readable.
+6. ...

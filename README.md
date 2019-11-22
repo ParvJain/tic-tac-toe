@@ -53,8 +53,13 @@ which means after every step user takes it runs an analysis towards making it's 
 
 ## Multiplayer mode
 
-This requires a redis running on port 7001, I'm using redis docker image (`docker pull redis`)
+### steps to run
+
+1. This requires a redis running on port 7001, I'm using redis docker image (`docker pull redis`)
 and `sudo docker run --name redis -p 7001:6379 -d redis`
+2. you need to do `pip install -r requirement.txt` to resolve dependencies.
+3. run `python main.py` once and in your another terminals open `python client.py` (it requires 2 client to be connected)
+
 
 ### Shared data objects
 

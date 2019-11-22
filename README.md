@@ -1,6 +1,11 @@
 ## How to start the game?
 
-`$ python3 main.py`
+### steps to run
+
+1. This requires a redis running on port 7001, I'm using redis docker image (`docker pull redis`)
+and `sudo docker run --name redis -p 7001:6379 -d redis`
+2. run `pip install -r requirement.txt` to resolve python packages dependencies.
+3. run `python main.py` once and in your another terminal open `python client.py` (it requires 2 client to be connected or one client if you play against machine)
 
 
 ## Implimentation flow
@@ -53,14 +58,6 @@ which means after every step user takes it runs an analysis towards making it's 
 
 ## Multiplayer mode
 
-### steps to run
-
-1. This requires a redis running on port 7001, I'm using redis docker image (`docker pull redis`)
-and `sudo docker run --name redis -p 7001:6379 -d redis`
-2. you need to do `pip install -r requirement.txt` to resolve dependencies.
-3. run `python main.py` once and in your another terminals open `python client.py` (it requires 2 client to be connected)
-
-
 ### Shared data objects
 
 1. match_state
@@ -102,7 +99,7 @@ local variables:
 ### What's not working
 
 1. ~~Machine mode.~~
-2. If opponents have same name, it doesn't work as it's supposed to.
+2. ~~If opponents have same name, it doesn't work as it's supposed to.~~
 3. User messages (waiting for another player, you've (won|lost|draw))
 4. Rematch
 5. Refactoring needed to make `client.py` code more readable.

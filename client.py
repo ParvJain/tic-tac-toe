@@ -5,7 +5,9 @@ import string
 
 user_meta_data = {
     'registered' : False,
-    'name': None
+    'name': None,
+    'id': ''.join(random.choices(string.ascii_uppercase +
+                             string.digits, k = 7)) 
 }
 
 redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
@@ -40,7 +42,7 @@ def show_board(available_grid):
 def prompt_user_info():
     user_name = input("What is your name? : ")
     user_meta_data['name'] = user_name
-    return json.dumps({"name": user_name})
+    return json.dumps({"name": user_name, "id": user_meta_data["id"]})
 
 def prompt_move():
     move = input("What's your move? : ")
@@ -48,7 +50,7 @@ def prompt_move():
 
 def prompt_machine_mode():
     machine_mode =  input(f"Do you want to play against 🤖 : ").strip()
-    if machine_mode.lower()[0] == 'y':
+    if machine_mode.lower().strip()[0] == 'y':
         redis_client.publish('machine_mode', 'True')
         return True
     return False
@@ -56,9 +58,7 @@ def prompt_machine_mode():
 if __name__ == '__main__':
     pubsub = redis_client.pubsub()
     pubsub.subscribe(['match_state', 'available_grid', 'current_player'])
-    user_id = ''.join(random.choices(string.ascii_uppercase +
-                             string.digits, k = 7)) 
-    publish_data('register_user', user_id)
+    publish_data('register_user', user_meta_data["id"])
     user_name =  None
     prompt_machine_mode()
     for event in pubsub.listen():
@@ -76,6 +76,6 @@ if __name__ == '__main__':
                 print('-----------')
                 show_board(json.loads(event['data']))
             elif (channel_name == 'current_player' and \
-                  event['data'].decode('ascii') == user_meta_data['name']):
+                  event['data'].decode('ascii') == user_meta_data['id']):
                 user_move = prompt_move()
                 publish_data('move', user_move)

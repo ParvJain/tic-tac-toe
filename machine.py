@@ -1,7 +1,7 @@
 import copy
 import random
 from config import game_data, player_meta_data
-
+from helper import flip
 
 def boot_machine():
     game_data["machine_mode"] = True
@@ -43,11 +43,16 @@ def analyze_move(ranked_map):
             return random.choice(combined_moves_set)
     return True
 
+def get_opponent_id():
+    player_list = list(player_meta_data.keys())
+    return flip('MACHINE', player_list)
+
 def machine_move():
     available_moves = get_available_slots()
     rank = dict(attack={}, defend={})
-    machine_historical_data = player_meta_data["PLAYER_A"]["marked_location"]
-    opponent_historical_data = player_meta_data["PLAYER_B"]["marked_location"]
+    opponent_id = get_opponent_id()
+    machine_historical_data = player_meta_data["MACHINE"]["marked_location"]
+    opponent_historical_data = player_meta_data[opponent_id]["marked_location"]
 
     for move in available_moves:
         machine_next_move = copy.deepcopy(machine_historical_data)

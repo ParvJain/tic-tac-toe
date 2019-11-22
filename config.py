@@ -11,5 +11,6 @@ game_data = {
                              [1,4,7], [2,5,8], [3,6,9], # horizontal lines
                              [1,5,9], [3,5,7]], # diagonal lines,
     "total_moves" : 0,
-    "historical_score_data": []
+    "historical_score_data": [],
+    "available_marks": ["X", "O"]
 }

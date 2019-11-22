@@ -1,6 +1,7 @@
 from log import log
 from config import player_meta_data, game_data
 from machine import machine_move, boot_machine
+from helper import flip
 import redis
 import json
 
@@ -32,17 +33,6 @@ def is_winner(player_locations):
             return True
     return False
 
-# give 2 string choices and a state; outputs opposite state like, [in]on -> [out]off.
-def toggle(state, choices):
-    if len(choices) < 1:
-        log("MethodNotSupported")
-        return 
-    state = str(state).strip()
-    if state not in choices:
-        log("InvalidChoice")
-    choices.remove(state)
-    return choices[0]
-
 def is_location_taken(new_location):
     return int(new_location) not in game_data["available_locations"]
 
@@ -63,8 +53,8 @@ def mark_parser(choice):
         return 'O'
     return 'X'
 
-def get_player_location(player_name, mark):
-    publish_data('current_player', player_name)
+def get_player_location(player_id, mark):
+    publish_data('current_player', player_id)
     pubsub = redis_client.pubsub()
     pubsub.subscribe(['move'])
     for move in pubsub.listen():
@@ -92,7 +82,7 @@ def rematch_prompt(last_player):
     show_score()
     if rematch.lower()[0] == 'y':
         reset_score()
-        roll_game(toggle(last_player, list(player_meta_data.keys())))
+        roll_game(flip(last_player, list(player_meta_data.keys())))
     else:
         log("End") # No for rematch!
     return True
@@ -111,21 +101,20 @@ def analyze_match(current_player_data, current_player):
         return rematch_prompt(current_player)
     else:
         game_data["total_moves"] += 1
-        current_player = toggle(current_player, list(player_meta_data.keys()))
+        current_player = flip(current_player, list(player_meta_data.keys()))
         return roll_game(current_player)
 
-def roll_game(current_player='PLAYER_A'):
+def roll_game(current_player):
     # print()
     location = None
     current_player_data = player_meta_data[current_player]
 
     # prompting for grid location until it's something that we can mark.
-    if current_player == 'PLAYER_A' and game_data["machine_mode"]:
+    if current_player == 'MACHINE' and game_data["machine_mode"]:
         location = machine_move()
     else:
         while location not in game_data["available_locations"]:
-            current_location = get_player_location(current_player_data['name'], \
-                                                    current_player_data['mark'])
+            current_location = get_player_location(current_player, current_player_data['mark'])
             if check_location_integrity(current_location):
                 location = int(current_location)
                 
@@ -135,12 +124,11 @@ def roll_game(current_player='PLAYER_A'):
 def update_player(user_data):
     if len(player_meta_data) > 1:
         return False
-    current_player = 'PLAYER_A' if len(player_meta_data) == 0 else 'PLAYER_B'
-    player_mark = {"PLAYER_A": "X", "PLAYER_B": "O"}
-    player_meta_data[current_player] = {}
-    player_meta_data[current_player]['name'] = user_data['name']
-    player_meta_data[current_player]['mark'] = player_mark[current_player]
-    player_meta_data[current_player]['marked_location'] = []
+    player_id = user_data["id"]
+    player_meta_data[player_id] = {}
+    player_meta_data[player_id]['name'] = user_data['name']
+    player_meta_data[player_id]['mark'] = game_data["available_marks"][len(player_meta_data) - 1]
+    player_meta_data[player_id]['marked_location'] = []
     game_data["user_signed_up"] += 1
     return player_meta_data
 
@@ -156,10 +144,10 @@ def register_users():
         channel = user['channel'].decode('ascii')
         if (user['type'] == 'message' and channel == 'machine_mode'):
             if user['data'].decode('ascii') == 'True':
-                update_player({"name": "Mr. 🤖"})
+                game_data["user_registered"] += 1
+                update_player({"name": "Mr. 🤖", "id" : "MACHINE"})
                 print('machine mode enabled')
                 boot_machine()
-                game_data["user_registered"] += 1
                 print(game_data)
         if (user['type'] == 'message' and channel == 'register_user'):
             game_data["user_registered"] += 1
@@ -187,4 +175,4 @@ if __name__ == "__main__":
     register_users()
     initate_shared_objects()
     listen_user_details()
-    roll_game()
+    roll_game(list(player_meta_data.keys())[0])

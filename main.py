@@ -8,6 +8,7 @@ redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
 
 # modifying grid data and updating player data
 def update_location(player, location):
+    print(player, location)
     player_data = player_meta_data[player]
     game_data["available_locations"][game_data["available_locations"] \
                                     .index(location)] = player_data['mark']
@@ -122,7 +123,7 @@ def roll_game(current_player='PLAYER_A'):
     current_player_data = player_meta_data[current_player]
 
     # prompting for grid location until it's something that we can mark.
-    if current_player == 'PLAYER_B' and game_data["machine_mode"]:
+    if current_player == 'PLAYER_A' and game_data["machine_mode"]:
         location = machine_move()
     else:
         while location not in game_data["available_locations"]:
@@ -160,13 +161,30 @@ def initate_shared_objects():
 users = []
 def register_users():
     pubsub = redis_client.pubsub()
-    pubsub.subscribe(['register_user'])
+    pubsub.subscribe(['register_user', 'machine_mode'])
     for user in pubsub.listen():
-        if user['type'] == 'message':
+        channel = user['channel'].decode('ascii')
+        print(user)
+        if (user['type'] == 'message' and channel == 'register_user'):
             users.append(user['data'])
+        if (user['type'] == 'message' and channel == 'machine_mode'):
+            if user['data'].decode('ascii') == 'True':
+                users.append('MACHINE')
+                update_player({"name": "Mr. 🤖"})
+                print('machine mode enabled')
+                boot_machine()
         if len(users) == 2:
+            print(users)
+            print('unsubscribed from register_user')
             pubsub.unsubscribe()
     return
+
+def is_user_registered(pubsub):
+    if len(users) == 0:
+        return pubsub.unsubscribe()
+    if game_data['machine_mode']:
+        users.pop(0)
+    return False
 
 def listen_user_details():
     pubsub = redis_client.pubsub()
@@ -175,8 +193,7 @@ def listen_user_details():
         if user['type'] == 'message':
             update_player(json.loads(user['data']))
             users.pop(0)
-        if len(users) == 0:
-            pubsub.unsubscribe()
+        is_user_registered(pubsub)
     return
     
     
@@ -186,5 +203,3 @@ if __name__ == "__main__":
     initate_shared_objects()
     listen_user_details()
     roll_game()
-    
-    

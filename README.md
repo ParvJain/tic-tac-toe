@@ -70,6 +70,7 @@ and `sudo docker run --name redis -p 7001:6379 -d redis`
 5. current_player (user_name)
 6. move (player, location)
 7. register_user
+8. machine_mode
 
 ### Match State 
 
@@ -100,9 +101,10 @@ local variables:
 
 ### What's not working
 
-1. Machine mode.
+1. ~~ Machine mode. ~~
 2. If opponents have same name, it doesn't work as it's supposed to.
 3. User messages (waiting for another player, you've (won|lost|draw))
 4. Rematch
 5. Refactoring needed to make `client.py` code more readable.
-6. ...
+6. waiting for server before client's move.
+7. ...

@@ -5,11 +5,6 @@ from config import game_data, player_meta_data
 
 def boot_machine():
     game_data["machine_mode"] = True
-    player_meta_data["PLAYER_B"]["name"] = "Mr. 🤖"
-    player_name = ''
-    while len(player_name) < 1:
-        player_name = input(f"I'm Player 1 and My Name is: ")
-    player_meta_data["PLAYER_A"]['name'] = player_name 
     return True
 
 def get_available_slots():
@@ -51,8 +46,8 @@ def analyze_move(ranked_map):
 def machine_move():
     available_moves = get_available_slots()
     rank = dict(attack={}, defend={})
-    machine_historical_data = player_meta_data["PLAYER_B"]["marked_location"]
-    opponent_historical_data = player_meta_data["PLAYER_A"]["marked_location"]
+    machine_historical_data = player_meta_data["PLAYER_A"]["marked_location"]
+    opponent_historical_data = player_meta_data["PLAYER_B"]["marked_location"]
 
     for move in available_moves:
         machine_next_move = copy.deepcopy(machine_historical_data)

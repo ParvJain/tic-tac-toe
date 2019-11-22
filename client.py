@@ -8,7 +8,9 @@ user_meta_data = {
     'name': None
 }
 
-def publish_data(channel, data, redis_client):
+redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
+
+def publish_data(channel, data):
     try:
         redis_client.publish(channel, data)
     except(e):
@@ -44,29 +46,36 @@ def prompt_move():
     move = input("What's your move? : ")
     return json.dumps({"name": user_meta_data['name'], "move": move})
 
+def prompt_machine_mode():
+    machine_mode =  input(f"Do you want to play against 🤖 : ").strip()
+    if machine_mode.lower()[0] == 'y':
+        redis_client.publish('machine_mode', 'True')
+        return True
+    return False
+
 if __name__ == '__main__':
-    redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
     pubsub = redis_client.pubsub()
     pubsub.subscribe(['match_state', 'available_grid', 'current_player'])
     user_id = ''.join(random.choices(string.ascii_uppercase +
                              string.digits, k = 7)) 
-    publish_data('register_user', user_id, redis_client)
+    publish_data('register_user', user_id)
     user_name =  None
+    prompt_machine_mode()
     for event in pubsub.listen():
         channel_name = event['channel'].decode('ascii')
         if event['type'] == 'message':
             if (channel_name == 'match_state' and \
                 int(event['data']) == 1 and user_meta_data['registered'] == False):
-                print('here')
                 user_info = prompt_user_info()
-                publish_data('user_info', user_info, redis_client)
+                publish_data('user_info', user_info)
                 user_meta_data['registered'] = True
             elif (channel_name == 'match_state' and \
                 event['data'] == 2):
                 print("match ended")
             elif (channel_name == 'available_grid'):
+                print('-----------')
                 show_board(json.loads(event['data']))
             elif (channel_name == 'current_player' and \
                   event['data'].decode('ascii') == user_meta_data['name']):
                 user_move = prompt_move()
-                publish_data('move', user_move, redis_client)
+                publish_data('move', user_move)

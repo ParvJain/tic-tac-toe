@@ -1,15 +1,4 @@
-player_meta_data = {
-    'PLAYER_A' : {
-        'name' : str(),
-        'mark' : str(),
-        'marked_location': list()
-    },
-    'PLAYER_B' : {
-        'name' : str(),
-        'mark' : str(),
-        'marked_location': list()
-    }
-}
+player_meta_data = {}
 
 game_data = {
     "machine_mode": False,

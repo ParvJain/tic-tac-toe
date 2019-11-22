@@ -1,28 +1,10 @@
 from log import log
 from config import player_meta_data, game_data
 from machine import machine_move, boot_machine
+import redis
+import json
 
-def magic_cols(row):
-    fg = lambda text, color: "\33[38;5;" + str(color) + "m" + text + "\33[0m"
-    column_list = list()
-    for col in row:
-        if type(col) is int:
-            column_list.append(fg(str(col), 11))
-        elif (col == 'X'):
-            column_list.append(fg(col, 21))
-        elif (col == 'O'):
-            column_list.append(fg(col, 9))
-    return column_list
-
-# Groups the grid by 3 and loop through to print columns
-def show_board():
-    grouped_location = [game_data["available_locations"][k:k+game_data["board_dimension"]] \
-                        for k in range(0, len(game_data["available_locations"]),\
-                         game_data["board_dimension"])]
-    for row in grouped_location:
-        row = magic_cols(row)
-        print(f"|{row[0]}|{row[1]}|{row[2]}|")
-    return True
+redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
 
 # modifying grid data and updating player data
 def update_location(player, location):
@@ -30,6 +12,7 @@ def update_location(player, location):
     game_data["available_locations"][game_data["available_locations"] \
                                     .index(location)] = player_data['mark']
     player_data['marked_location'].append(location)
+    redis_client.publish('available_grid', json.dumps(game_data["available_locations"]))
     return True
 
 
@@ -72,8 +55,16 @@ def mark_parser(choice):
     return 'X'
 
 def get_player_location(player_name, mark):
-    show_board()
-    return input(f"It's your turn 🎲, {player_name} you're {mark} : ")
+    redis_client.publish('current_player', player_name)
+    pubsub = redis_client.pubsub()
+    pubsub.subscribe(['move'])
+    for move in pubsub.listen():
+        if move['type'] == 'message':
+            pubsub.unsubscribe()
+            return json.loads(move['data'])['move']
+
+    # show_board()
+    # return input(f"It's your turn 🎲, {player_name} you're {mark} : ")
 
 def set_player_mark(choosen_mark):
     sanitized_mark = mark_parser(choosen_mark)
@@ -81,23 +72,6 @@ def set_player_mark(choosen_mark):
     print(f"Player 1 will play as '{sanitized_mark}', and Player 2 '{reversed_sanitized_mark}'")
     player_meta_data['PLAYER_A']['mark'] = sanitized_mark
     player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
-    return True
-
-def player_sign_up():
-    choosen_mark = \
-        input(f"Hello Player 1, choose your thing ('X' or 'O'); with default as 'X': ").strip()
-    set_player_mark(choosen_mark)
-    machine_mode =  \
-        input(f"Do you want to play against 🤖 : ").strip()
-    if machine_mode.lower()[0] == 'y':
-        boot_machine()
-        return True
-
-    for idx, player in enumerate(player_meta_data.keys()):
-        player_name = ''
-        while len(player_name) < 1:
-            player_name = input(f"I'm Player {str(idx + 1)} and My Name is: ")
-        player_meta_data[player]['name'] = player_name 
     return True
 
 def reset_score():
@@ -129,12 +103,12 @@ def analyze_match(current_player_data, current_player):
     if is_winner(current_player_data['marked_location']):
         print(f"{current_player_data['name']} Won! 🎉")
         log("Won")
-        show_board()
+        # show_board()
         game_data["historical_score_data"].append(current_player)
         return rematch_prompt(current_player)
     elif game_data["total_moves"] == 8:
         log("Tie")
-        show_board()
+        # show_board()
         game_data["historical_score_data"].append('TIE')
         return rematch_prompt(current_player)
     else:
@@ -143,7 +117,7 @@ def analyze_match(current_player_data, current_player):
         return roll_game(current_player)
 
 def roll_game(current_player='PLAYER_A'):
-    print()
+    # print()
     location = None
     current_player_data = player_meta_data[current_player]
 
@@ -159,8 +133,58 @@ def roll_game(current_player='PLAYER_A'):
                 
     update_location(current_player, location)
     return analyze_match(current_player_data, current_player)
+
+def update_user_state():
+    pass
+
+def update_player(user_data):
+    if len(player_meta_data) > 1:
+        return False
+    current_player = 'PLAYER_A' if len(player_meta_data) == 0 else 'PLAYER_B'
+    player_mark = {"PLAYER_A": "X", "PLAYER_B": "O"}
+    player_meta_data[current_player] = {}
+    player_meta_data[current_player]['name'] = user_data['name']
+    player_meta_data[current_player]['mark'] = player_mark[current_player]
+    player_meta_data[current_player]['marked_location'] = []
+    return player_meta_data
+
+
+def initate_shared_objects():
+    redis_client.publish('match_state', 1)
+    redis_client.publish('available_grid', json.dumps(game_data['available_locations']))
+    redis_client.publish('match_decision', '')
+    redis_client.publish('current_player', '')
+    redis_client.publish('move', '')
+    return
+
+users = []
+def register_users():
+    pubsub = redis_client.pubsub()
+    pubsub.subscribe(['register_user'])
+    for user in pubsub.listen():
+        if user['type'] == 'message':
+            users.append(user['data'])
+        if len(users) == 2:
+            pubsub.unsubscribe()
+    return
+
+def listen_user_details():
+    pubsub = redis_client.pubsub()
+    pubsub.subscribe(['user_info'])
+    for user in pubsub.listen():
+        if user['type'] == 'message':
+            update_player(json.loads(user['data']))
+            users.pop(0)
+        if len(users) == 0:
+            pubsub.unsubscribe()
+    return
+    
     
 if __name__ == "__main__":
-    player_sign_up()
-    log("Start")
+    print("waiting for players to sign-up")
+    register_users()
+    initate_shared_objects()
+    listen_user_details()
     roll_game()
+    
+    

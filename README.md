@@ -2,6 +2,7 @@
 
 `$ python3 main.py`
 
+
 ## Implimentation flow
 
 0. Initialize Program.
@@ -49,3 +50,45 @@ which means after every step user takes it runs an analysis towards making it's 
     2. 1,2 - advancement towards making a win/defend
     3. 3 [Power Move] - win or stop opponent from winning
 4. once all moves are ranked; top rankers are picked up and randomly choosen.
+
+## Multiplayer mode
+
+This requires a redis running on port 7001, I'm using redis docker image (`docker pull redis`)
+and `sudo docker run --name redis -p 7001:6379 -d redis`
+
+### Shared data objects
+
+1. match_state
+2. user_info
+3. available_grid
+4. match_decision (user_name/draw)
+5. current_player (user_name)
+6. move (player, location)
+7. register_user
+
+### Match State 
+
+0 - game started
+1 - Match In-progress
+2 - Match ended
+
+### Game-server
+
+local variables:
+    player = []
+1. initiate shared objects with default values. 
+2. if length of player_meta_data = 2 -> update user_name and change match_state to 1 and current_player to user_name.
+3. subscribe to move and update current_user and available_grid and user_info until to update match_decision.
+
+### Client
+
+local variables:
+    user_name
+    user_data_submitted (bool)
+
+0. subscribe to match_state
+1. if match_state = 0 and user_data_submitted = False, publish to user_name by taking input.
+2. if match_state = 2 print decision;
+3. if match state = 1
+    a. subscribe to available_grid and display grid.
+    b. if current_player = user_name -> prompt to publish move

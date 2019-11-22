@@ -64,14 +64,6 @@ def get_player_location(player_name, mark):
             pubsub.unsubscribe()
             return json.loads(move['data'])['move']
 
-def set_player_mark(choosen_mark):
-    sanitized_mark = mark_parser(choosen_mark)
-    reversed_sanitized_mark = toggle(sanitized_mark, ['X', 'O'])
-    print(f"Player 1 will play as '{sanitized_mark}', and Player 2 '{reversed_sanitized_mark}'")
-    player_meta_data['PLAYER_A']['mark'] = sanitized_mark
-    player_meta_data['PLAYER_B']['mark'] = reversed_sanitized_mark
-    return True
-
 def reset_score():
     game_data["available_locations"] = list(range(1,10))
     for player in player_meta_data.keys():
@@ -188,8 +180,7 @@ def listen_user_details():
             users.pop(0)
         is_user_registered(pubsub)
     return
-    
-    
+
 if __name__ == "__main__":
     print("waiting for players to sign-up")
     register_users()

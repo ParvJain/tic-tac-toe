@@ -1,6 +1,9 @@
 player_meta_data = {}
 
 game_data = {
+    "player_limit": 2,
+    "user_signed_up": 0,
+    "user_registered": 0,
     "machine_mode": False,
     "board_dimension": 3,
     "available_locations" : list(range(1,10)),

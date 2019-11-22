@@ -6,6 +6,14 @@ import json
 
 redis_client = redis.Redis(host='0.0.0.0', port=7001, db=0)
 
+def publish_data(key, value):
+    try:
+        redis_client.publish(key, value)
+        redis_client.set(key, value)
+    except e:
+        print(e)
+    return
+
 # modifying grid data and updating player data
 def update_location(player, location):
     print(player, location)
@@ -13,7 +21,7 @@ def update_location(player, location):
     game_data["available_locations"][game_data["available_locations"] \
                                     .index(location)] = player_data['mark']
     player_data['marked_location'].append(location)
-    redis_client.publish('available_grid', json.dumps(game_data["available_locations"]))
+    publish_data('available_grid', json.dumps(game_data["available_locations"]))
     return True
 
 
@@ -56,7 +64,7 @@ def mark_parser(choice):
     return 'X'
 
 def get_player_location(player_name, mark):
-    redis_client.publish('current_player', player_name)
+    publish_data('current_player', player_name)
     pubsub = redis_client.pubsub()
     pubsub.subscribe(['move'])
     for move in pubsub.listen():
@@ -133,39 +141,36 @@ def update_player(user_data):
     player_meta_data[current_player]['name'] = user_data['name']
     player_meta_data[current_player]['mark'] = player_mark[current_player]
     player_meta_data[current_player]['marked_location'] = []
+    game_data["user_signed_up"] += 1
     return player_meta_data
 
 def initate_shared_objects():
-    redis_client.publish('match_state', 1)
-    redis_client.publish('available_grid', json.dumps(game_data['available_locations']))
-    redis_client.publish('match_decision', '')
-    redis_client.publish('current_player', '')
-    redis_client.publish('move', '')
+    publish_data('match_state', 1)
+    publish_data('available_grid', json.dumps(game_data['available_locations']))
     return
 
-users = []
 def register_users():
     pubsub = redis_client.pubsub()
     pubsub.subscribe(['register_user', 'machine_mode'])
     for user in pubsub.listen():
         channel = user['channel'].decode('ascii')
-        if (user['type'] == 'message' and channel == 'register_user'):
-            users.append(user['data'])
         if (user['type'] == 'message' and channel == 'machine_mode'):
             if user['data'].decode('ascii') == 'True':
-                users.append('MACHINE')
                 update_player({"name": "Mr. 🤖"})
                 print('machine mode enabled')
                 boot_machine()
-        if len(users) == 2:
+                game_data["user_registered"] += 1
+                print(game_data)
+        if (user['type'] == 'message' and channel == 'register_user'):
+            game_data["user_registered"] += 1
+            
+        if game_data["user_registered"] == game_data["player_limit"]:
             pubsub.unsubscribe()
     return
 
 def is_user_registered(pubsub):
-    if len(users) == 0:
+    if game_data["user_signed_up"] == game_data["player_limit"]:
         return pubsub.unsubscribe()
-    if game_data['machine_mode']:
-        users.pop(0)
     return False
 
 def listen_user_details():
@@ -174,7 +179,6 @@ def listen_user_details():
     for user in pubsub.listen():
         if user['type'] == 'message':
             update_player(json.loads(user['data']))
-            users.pop(0)
         is_user_registered(pubsub)
     return
 
